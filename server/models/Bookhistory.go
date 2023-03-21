@@ -8,10 +8,10 @@ import (
 
 type Bookhistory struct {
 	gorm.Model
-	BookId uint
-	Book Book `gorm:"foreignKey:BookId"`
+	BookId  uint
+	Book    Book `gorm:"foreignKey:BookId"`
 	Duedate time.Time
-	Price float64
-	Status int16
-	Day int16
+	Price   float64
+	Status  int16
+	Day     int16
 }

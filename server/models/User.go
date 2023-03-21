@@ -1,13 +1,15 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type User struct {
-	gorm.Model
-	Name string
-	Email string
-	Address string
-	Tel string
-	Point int32
-	Status int16
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `                  json:"createdAt"`
+	UpdatedAt time.Time `                  json:"updatedAt"`
+	Name      string    `                  json:"name"      validate:"required,min=3,max=64"`
+	Email     string    `                  json:"email"     validate:"required"`
+	Address   string    `                  json:"address"`
+	Tel       string    `                  json:"tel"`
+	Point     int32     `                  json:"point"`
+	Status    int16     `                  json:"status"    validate:"required,number,max=1"`
 }

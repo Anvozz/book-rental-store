@@ -1,22 +1,39 @@
 package main
 
 import (
+	"log"
+
 	"github.com/Anvozz/book-rental-shop/database"
-	"github.com/Anvozz/book-rental-shop/models"
+	"github.com/Anvozz/book-rental-shop/routes"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"gorm.io/gorm"
 )
 
+func setupRoutes(c *fiber.App, db *gorm.DB) {
+	r := routes.New(db)
+
+	// Category
+	c.Get("/category", r.GeteCategory)
+	c.Post("/category", r.CreateCategory)
+	c.Put("/category", r.PutCategory)
+	c.Delete("/category/:id", r.DeleteCategory)
+
+	// User
+	c.Post("/users", r.CreateUser)
+	c.Get("/users", r.GetUser)
+	c.Get("/users/:id", r.GetUserByid)
+}
+
 func main() {
+	log.Println("Starting book api server")
+	// Setup Databse
 	db := database.Connect()
-	var user []models.User
-	// bob := models.User{Name: "Wongsathorn Kanno" , Email: "sankaapb@gmail.com" , Address:  "22" , Status: 1 , Tel: "0649453094" , Point: 500}
-	// db.Create(&bob)
-	db.Find(&user)
+	// Create fiber instance
 	app := fiber.New()
-
-  app.Get("/users", func(c *fiber.Ctx) error {
-    return c.JSON(user)
-  })
-
-  app.Listen(":3000")
+	app.Use(logger.New())
+	// Setup routes
+	setupRoutes(app, db)
+	// Listen
+	app.Listen(":3000")
 }
