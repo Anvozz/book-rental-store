@@ -2,6 +2,7 @@ package routes
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/Anvozz/book-rental-shop/models"
 	"github.com/go-playground/validator"
@@ -12,8 +13,8 @@ type UserRestHandler interface {
 	CreateUser(c *fiber.Ctx) error
 	GetUser(c *fiber.Ctx) error
 	GetUserByid(c *fiber.Ctx) error
-	// PutUser(c *fiber.Ctx) error
-	// DeleteUser(c *fiber.Ctx) error
+	PutUser(c *fiber.Ctx) error
+	DeleteUser(c *fiber.Ctx) error
 }
 
 type UserHandler struct{}
@@ -84,4 +85,50 @@ func (r *restHandler) GetUserByid(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(user)
+}
+
+
+func (r *restHandler) PutUser(c *fiber.Ctx) error {
+	user := new(models.User)
+	if err := c.BodyParser(user); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	errors := uservalidateStruct(*user)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
+	}
+
+	if user.ID == 0 {
+		return c.Status(fiber.StatusBadRequest).
+			JSON(ResponseMessage{Message: "Invalid argument field Id"})
+	}
+
+	r.db.Save(
+		&models.User{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email: 		 user.Email,
+			Address:   user.Address,
+			Tel:       user.Tel,
+			Status:    user.Status,
+			UpdatedAt: time.Now(),
+		},
+	)
+
+	return c.Status(fiber.StatusOK).JSON(ResponseMessage{Message: "Update user successfully."})
+}
+
+
+func (r *restHandler) DeleteUser(c *fiber.Ctx) error {
+	idParam, err := strconv.ParseUint(c.Params("id"), 10, 32)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
+	user := &models.User{ID: uint(idParam)}
+	r.db.Delete(&user)
+	return c.Status(fiber.StatusOK).JSON(ResponseMessage{Message: "Delete user successfully."})
 }

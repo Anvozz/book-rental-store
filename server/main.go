@@ -23,6 +23,8 @@ func setupRoutes(c *fiber.App, db *gorm.DB) {
 	c.Post("/users", r.CreateUser)
 	c.Get("/users", r.GetUser)
 	c.Get("/users/:id", r.GetUserByid)
+	c.Put("/users",r.PutUser)
+	c.Delete("/users/:id",r.DeleteUser)
 }
 
 func main() {
