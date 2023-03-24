@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/Anvozz/book-rental-shop/models"
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
@@ -53,4 +56,76 @@ func (r *restHandler) CreateBook(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(ResponseMessage{Message: "Create book successfully."})
+}
+
+func (r *restHandler) GetBook(c *fiber.Ctx) error {
+	var book []models.Book
+	r.db.Order("id ASC").Find(&book)
+	return c.Status(fiber.StatusOK).JSON(book)
+}
+
+func (r *restHandler) GetBookByid(c *fiber.Ctx) error {
+	id := c.Params("id")
+	bookId, err := strconv.ParseUint(id, 10, 32)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
+
+	book := models.Book{ID: uint(bookId)}
+	result := r.db.Find(&book)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
+
+	if result.RowsAffected == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(ResponseMessage{Message: "No user found"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(book)
+}
+
+func (r *restHandler) PutBook(c *fiber.Ctx) error {
+	book := new(models.Book)
+	if err := c.BodyParser(book); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	errors := bookvalidateStruct(*book)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
+	}
+
+	if book.ID == 0 {
+		return c.Status(fiber.StatusBadRequest).
+			JSON(ResponseMessage{Message: "Invalid argument field Id"})
+	}
+
+	r.db.Save(
+		&models.Book{
+			ID:           book.ID,
+			Name:         book.Name,
+			Amount:       book.Amount,
+			Status:       book.Status,
+			CategoryId:   book.CategoryId,
+			Desscription: book.Desscription,
+			UpdatedAt:    time.Now(),
+		},
+	)
+
+	return c.Status(fiber.StatusOK).JSON(ResponseMessage{Message: "Update book successfully."})
+}
+
+func (r *restHandler) DeleteBook(c *fiber.Ctx) error {
+	idParam, err := strconv.ParseUint(c.Params("id"), 10, 32)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
+	book := &models.Book{ID: uint(idParam)}
+	r.db.Delete(&book)
+	return c.Status(fiber.StatusOK).JSON(ResponseMessage{Message: "Delete book successfully."})
 }
