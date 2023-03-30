@@ -5,12 +5,14 @@ import "gorm.io/gorm"
 type RestHandler interface {
 	CategoryRestHandler
 	UserRestHandler
+	BookRestHandler
 }
 
 type restHandler struct {
 	db *gorm.DB
 	CategoryHandler
 	UserHandler
+	BookHandler
 }
 
 type ErrorResponse struct {

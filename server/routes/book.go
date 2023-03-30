@@ -60,7 +60,11 @@ func (r *restHandler) CreateBook(c *fiber.Ctx) error {
 
 func (r *restHandler) GetBook(c *fiber.Ctx) error {
 	var book []models.Book
-	r.db.Order("id ASC").Find(&book)
+	err := r.db.Model(&models.Book{}).Preload("Category").Order("id ASC").Find(&book).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).
+			JSON(err)
+	}
 	return c.Status(fiber.StatusOK).JSON(book)
 }
 
@@ -80,7 +84,7 @@ func (r *restHandler) GetBookByid(c *fiber.Ctx) error {
 	}
 
 	if result.RowsAffected == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(ResponseMessage{Message: "No user found"})
+		return c.Status(fiber.StatusNotFound).JSON(ResponseMessage{Message: "No book found"})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(book)
@@ -110,7 +114,7 @@ func (r *restHandler) PutBook(c *fiber.Ctx) error {
 			Name:         book.Name,
 			Amount:       book.Amount,
 			Status:       book.Status,
-			CategoryId:   book.CategoryId,
+			CategoryID:   book.CategoryID,
 			Desscription: book.Desscription,
 			UpdatedAt:    time.Now(),
 		},

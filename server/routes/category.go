@@ -61,7 +61,11 @@ func (r *restHandler) CreateCategory(c *fiber.Ctx) error {
 
 func (r *restHandler) GeteCategory(c *fiber.Ctx) error {
 	var category []models.Category
-	r.db.Order("id ASC").Find(&category)
+
+	err := r.db.Model(&models.Category{}).Preload("Books").Order("id ASC").Find(&category).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
+	}
 	return c.Status(http.StatusOK).JSON(category)
 }
 

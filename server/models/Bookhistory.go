@@ -2,16 +2,16 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Bookhistory struct {
-	gorm.Model
-	BookId  uint
-	Book    Book `gorm:"foreignKey:BookId"`
-	Duedate time.Time
-	Price   float64
-	Status  int16
-	Day     int16
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `                  json:"createdAt"`
+	UpdatedAt time.Time `                  json:"updatedAt"`
+	BookId    uint
+	Book      Book
+	Duedate   time.Time
+	Price     int64
+	Status    int16
+	Day       int16
 }
