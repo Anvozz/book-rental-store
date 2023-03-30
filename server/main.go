@@ -32,6 +32,7 @@ func setupRoutes(c *fiber.App, db *gorm.DB) {
 	c.Get("/book/:id", r.GetBookByid)
 	c.Put("/book", r.PutBook)
 	c.Delete("/book/:id", r.DeleteBook)
+
 }
 
 func main() {
